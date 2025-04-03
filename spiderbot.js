@@ -1,10 +1,17 @@
 const qrcode = require('qrcode-terminal');
-const { Client } = require('whatsapp-web.js');
-const client = new Client();
+const fs = require('fs');
+const { Client, LocalAuth } = require('whatsapp-web.js');
+
+// Criando o cliente com autenticação local para salvar a sessão
+const client = new Client({
+    authStrategy: new LocalAuth()
+});
 
 // Serviço de leitura do QR Code
 client.on('qr', qr => {
+    console.clear(); // Limpa o terminal para exibir apenas o QR Code atualizado
     qrcode.generate(qr, { small: true });
+    console.log('Escaneie o QR Code para conectar ao WhatsApp.');
 });
 
 // Confirmação de conexão
@@ -25,7 +32,8 @@ client.on('message', async msg => {
     const name = contact.pushname.split(" ")[0];
     
     // Verificação de palavra-chave exata
-    if (/^(Momo|Benzinho|Calango|TesteTI)$/i.test(msg.body)) {
+    const palavrasChave = ['Momo', 'Benzinho', 'Calango', 'TesteTI'];
+    if (palavrasChave.includes(msg.body.trim())) {
         await delay(3000);
         await chat.sendStateTyping();
         await delay(3000);
@@ -33,6 +41,7 @@ client.on('message', async msg => {
         return;
     }
 
+    // Respostas automáticas para as opções
     const respostas = {
         '1': `O que você gostaria que comprasse?\n\nFaça uma lista detalhada. Se preferir alguma marca, coloque na frente do item, junto com a quantidade e marca.\n\nPor exemplo:\nSuco 1,9L, laranja e acerola, 2, Prates\nPão de forma, integral, 1, Pullman`,
         '2': `Qual a chave Pix?\nQual o nome do destinatário?\nQual o valor?\nQual o motivo da transferência?`,
